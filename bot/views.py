@@ -20,7 +20,7 @@ def webhook(request):
 @bot.message_handler(commands=['start'])
 def start_message(message):
     chat_id = message.chat.id
-    bot.send_message(chat_id=chat_id, text='Привет!\nЯ бот для фудшеринга'
+    bot.send_message(chat_id=chat_id, text='Привет!\nЯ бот для фудшеринга\n\n'
                                            'Основные команды:\n'
                                            '/info - что такое Фудшеринг\n'
                                            '/help - список основных команд\n')
