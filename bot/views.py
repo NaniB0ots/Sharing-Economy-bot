@@ -5,12 +5,16 @@ from django.shortcuts import render
 from django.conf import settings
 from time import sleep
 
+from django.views.decorators.csrf import csrf_exempt
+
+
+
 bot = telebot.TeleBot(settings.TG_TOKEN, threaded=False)
 
-
+@csrf_exempt
 def webhook(request):
     bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
-    return HttpResponse('ok')
+    return HttpResponse(status=200)
 
 
 @bot.message_handler(commands=['start'])
