@@ -38,4 +38,4 @@ def start_bot(request):
 if not settings.DEBUG:
     bot.remove_webhook()
     sleep(1)
-    bot.set_webhook(url=settings.BOT_HOST + settings.TG_TOKEN)
+    bot.set_webhook(url=settings.BOT_HOST + 'bot/' + settings.TG_TOKEN)
