@@ -1,3 +1,31 @@
-from django.db import models
+# -*- coding: utf-8 -*-
 
-# Create your models here.
+from django.db import models
+from django.utils import timezone
+from datetime import date
+from django.contrib.auth.models import User
+
+
+class TGUsers(models.Model):
+    chat_id = models.IntegerField('chat_id', unique=True)
+    city = models.CharField('Город', max_length=250)
+
+    vegetables_fruits_nuts = models.BooleanField('Овощи фрукты, орехи')
+    cereals_pasta = models.BooleanField('Крупы, макаронные изделия')
+    meat_fish = models.BooleanField('Мясное, рыба')
+    juices_water = models.BooleanField('Соки, воды')
+    bakery_confectionery_products = models.BooleanField('Хлебобулочные и кондитерские изделия')
+    canned_food = models.BooleanField('Консервы')
+    alcohol = models.BooleanField('Алкоголь')
+    dairy_products = models.BooleanField('Молочная продукция')
+    ready_meals = models.BooleanField('Готовые блюда')
+
+    created = models.DateTimeField('Дата регистрации', auto_now_add=True)
+
+    class Meta:
+        ordering = ('-created',)
+        verbose_name = 'пользователя'
+        verbose_name_plural = 'Пользователи'
+
+    def __str__(self):
+        return str(self.chat_id)
