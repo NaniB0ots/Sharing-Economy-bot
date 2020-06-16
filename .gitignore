@@ -3,5 +3,4 @@ db.sqlite3
 *.pyc
 __pycache__
 venv
-vk_config.py
-tg_config.py
+SharingEconomybot/settings.py
