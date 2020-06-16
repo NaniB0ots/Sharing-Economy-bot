@@ -13,15 +13,15 @@ bot = telebot.TeleBot(settings.TG_TOKEN, threaded=False)
 
 @csrf_exempt
 def webhook(request):
-    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
+    bot.process_new_updates([telebot.types.Update.de_json(request.body.decode("utf-8"))])
     return HttpResponse(status=200)
 
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
     chat_id = message.chat.id
-    bot.send_message(chat_id=chat_id, text='Привет!\nЯ бот для фудшеринга')
-    bot.send_message(chat_id=chat_id, text='Основные команды:\n'
+    bot.send_message(chat_id=chat_id, text='Привет!\nЯ бот для фудшеринга'
+                                           'Основные команды:\n'
                                            '/info - что такое Фудшеринг\n'
                                            '/help - список основных команд\n')
     bot.send_message(chat_id=chat_id,
