@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
+from vk_parser.models import Cities
+
 from django.utils import timezone
 from datetime import date
 from django.contrib.auth.models import User
@@ -8,7 +10,7 @@ from django.contrib.auth.models import User
 
 class TGUsers(models.Model):
     chat_id = models.IntegerField('chat_id', unique=True)
-    city = models.CharField('Город', max_length=250)
+    city = models.ForeignKey(Cities, verbose_name=u'Город', on_delete=models.DO_NOTHING)
 
     vegetables_fruits_nuts = models.BooleanField('Овощи фрукты, орехи')
     cereals_pasta = models.BooleanField('Крупы, макаронные изделия')
