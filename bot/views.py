@@ -30,10 +30,7 @@ def start_message(message):
     if user:
         user.delete()
 
-    bot.send_message(chat_id=chat_id, text='Привет!\nЯ бот для фудшеринга\n\n'
-                                           'Основные команды:\n'
-                                           '/info - что такое Фудшеринг\n'
-                                           '/help - список основных команд\n')
+    bot.send_message(chat_id=chat_id, text='Привет!\nЯ бот для фудшеринга')
     bot.send_message(chat_id=chat_id,
                      text='Для того чтобы начать пользоваться моими функциями, пройдите небольшую регистрацию\n'
                           'Выберите город',
@@ -78,6 +75,9 @@ def handle_query(message):
 
     # Кнопка назад при выборе категории при регистрации
     if 'chooseCity' in data:
+        # Удаляем пользователя из БД
+        user = TGUsers.objects.filter(chat_id=chat_id)
+        user.delete()
         bot.edit_message_text(message_id=message_id, chat_id=chat_id,
                               text='Для того чтобы начать пользоваться моими функциями, '
                                    'пройдите небольшую регистрацию\n'
@@ -111,6 +111,21 @@ def handle_query(message):
                                       reply_markup=markup)
         del last_data[chat_id]
 
+    if 'end_reg' in data:
+        bot.edit_message_text(message_id=message_id, chat_id=chat_id,
+                              text='Вы успешно завершили регистрацию!😉\n'
+                                   'Скоро Вы начнете получать уведомления о новых раздачах\n\n'
+                                   'Теперь вам доступны настройки.\n'
+                                   'Там можно изменить город и категории продуктов '
+                                   'о которых вы хотите получать уведомления')
+
+        bot.send_message(chat_id=chat_id, text='Основные команды:\n'
+                                               '/info - что такое Фудшеринг\n'
+                                               '/change_city - изменить город\n'
+                                               '/change_categories - изменить категории\n'
+                                               '/help - список основных команд\n',
+                         reply_markup=makeReplyKeyboard_main_menu())
+
 
 # ==================== Обработка Inline кнопок END ==================== #
 def makeInlineKeyboard_chooseCity():
@@ -130,6 +145,12 @@ def makeInlineKeyboard_chooseCategory():
         markup.add(types.InlineKeyboardButton(text=str(cat) + ' ✅', callback_data=data))
     return markup
 
+
+def makeReplyKeyboard_main_menu():
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
+    btn = types.KeyboardButton('Настройки')
+    markup.add(btn)
+    return markup
 
 def start_bot(request):
     if settings.DEBUG:
