@@ -1,26 +1,21 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
-from vk_parser.models import Cities
+from vk_parser.models import Cities, ProductСategory
 
 from django.utils import timezone
 from datetime import date
 from django.contrib.auth.models import User
 
+CATEGORIES = {1: 'Овощи фрукты, орехи', 2: 'Крупы, макаронные изделия', 3: 'Мясное, рыба', 4: 'Соки, воды',
+              5: 'Хлебобулочные и кондитерские изделия', 6: 'Консервы', 7: 'Алкоголь', 8: 'Молочная продукция',
+              9: 'Готовые блюда'}
+
 
 class TGUsers(models.Model):
     chat_id = models.IntegerField('chat_id', unique=True)
     city = models.ForeignKey(Cities, verbose_name=u'Город', on_delete=models.DO_NOTHING)
-
-    vegetables_fruits_nuts = models.BooleanField('Овощи фрукты, орехи')
-    cereals_pasta = models.BooleanField('Крупы, макаронные изделия')
-    meat_fish = models.BooleanField('Мясное, рыба')
-    juices_water = models.BooleanField('Соки, воды')
-    bakery_confectionery_products = models.BooleanField('Хлебобулочные и кондитерские изделия')
-    canned_food = models.BooleanField('Консервы')
-    alcohol = models.BooleanField('Алкоголь')
-    dairy_products = models.BooleanField('Молочная продукция')
-    ready_meals = models.BooleanField('Готовые блюда')
+    categories = models.ManyToManyField(ProductСategory, verbose_name=u'Категория')
 
     created = models.DateTimeField('Дата регистрации', auto_now_add=True)
 
