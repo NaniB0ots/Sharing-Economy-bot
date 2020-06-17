@@ -20,6 +20,39 @@ def webhook(request):
     return HttpResponse(status=200)
 
 
+def makeInlineKeyboard_chooseCity():
+    cities = Cities.objects.all()
+    markup = types.InlineKeyboardMarkup()
+    for city in cities:
+        data = json.dumps({"city_id": city.id})
+        markup.add(types.InlineKeyboardButton(text=str(city), callback_data=data))
+    return markup
+
+
+def makeInlineKeyboard_chooseCategory():
+    categories = ProductСategory.objects.all()
+    markup = types.InlineKeyboardMarkup()
+    for cat in categories:
+        data = json.dumps({"category_id": cat.id})
+        markup.add(types.InlineKeyboardButton(text=str(cat) + ' ✅', callback_data=data))
+    return markup
+
+
+def makeReplyKeyboard_main_menu():
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
+    btn = types.KeyboardButton('Настройки')
+    markup.add(btn)
+    return markup
+
+
+def makeInlineKeyboard_setting():
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton(text='Изменить город', callback_data='edit_city'))
+    markup.add(types.InlineKeyboardButton(text='Изменить категории', callback_data='edit_category'))
+    markup.add(types.InlineKeyboardButton(text='Закрыть', callback_data='close'))
+    return markup
+
+
 # Команда /start
 @bot.message_handler(commands=['start'])
 def start_message(message):
@@ -74,7 +107,7 @@ def handle_query(message):
                               reply_markup=markup)
 
     # Кнопка назад при выборе категории при регистрации
-    if 'chooseCity' in data:
+    elif 'chooseCity' in data:
         # Удаляем пользователя из БД
         user = TGUsers.objects.filter(chat_id=chat_id)
         user.delete()
@@ -85,7 +118,7 @@ def handle_query(message):
                               reply_markup=makeInlineKeyboard_chooseCity())
 
     # При нажатии на категорию
-    if 'category_id' in data:
+    elif 'category_id' in data:
         data = json.loads(data)
         old_markup = message.message.json['reply_markup']['inline_keyboard']
         markup = types.InlineKeyboardMarkup()
@@ -111,7 +144,7 @@ def handle_query(message):
                                       reply_markup=markup)
         del last_data[chat_id]
 
-    if 'end_reg' in data:
+    elif 'end_reg' in data:
         bot.edit_message_text(message_id=message_id, chat_id=chat_id,
                               text='Вы успешно завершили регистрацию!😉\n'
                                    'Скоро Вы начнете получать уведомления о новых раздачах\n\n'
@@ -125,32 +158,50 @@ def handle_query(message):
                                                '/change_categories - изменить категории\n'
                                                '/help - список основных команд\n',
                          reply_markup=makeReplyKeyboard_main_menu())
+    elif 'edit_category' in data:
+        user = TGUsers.objects.get(chat_id=chat_id)
+        user_categories = user.categories.all()
+        categories = ProductСategory.objects.all()
+        markup = types.InlineKeyboardMarkup()
+
+        for cat in categories:
+            if cat in user_categories:
+                status = ' ✅'
+            else:
+                status = ' ❌'
+            callback_data = json.dumps({"category_id": cat.id})
+            markup.add(types.InlineKeyboardButton(text=str(cat) + status, callback_data=callback_data))
+        markup.add(types.InlineKeyboardButton(text='Сохранить', callback_data='save'))
+
+        bot.edit_message_text(message_id=message_id, chat_id=chat_id, text='Изменить категории',
+                                      reply_markup=markup)
+
+    elif 'edit_city' in data:
+        pass
+
+    elif 'close' in data:
+        bot.delete_message(chat_id=chat_id, message_id=message_id)
+    elif 'save' in data:
+        bot.delete_message(chat_id=chat_id, message_id=message_id)
+        bot.send_message(chat_id=chat_id, text='Настройки успешно изменены')
+
+
 
 
 # ==================== Обработка Inline кнопок END ==================== #
-def makeInlineKeyboard_chooseCity():
-    cities = Cities.objects.all()
-    markup = types.InlineKeyboardMarkup()
-    for city in cities:
-        data = json.dumps({"city_id": city.id})
-        markup.add(types.InlineKeyboardButton(text=str(city), callback_data=data))
-    return markup
 
 
-def makeInlineKeyboard_chooseCategory():
-    categories = ProductСategory.objects.all()
-    markup = types.InlineKeyboardMarkup()
-    for cat in categories:
-        data = json.dumps({"category_id": cat.id})
-        markup.add(types.InlineKeyboardButton(text=str(cat) + ' ✅', callback_data=data))
-    return markup
+# ==================== Обработка текста START==================== #
+@bot.message_handler(content_types=['text'])
+def text(message):
+    chat_id = message.chat.id
+    data = message.text
+
+    if 'Настройки' in data:
+        bot.send_message(chat_id=chat_id, text='Настройки ⚙️', reply_markup=makeInlineKeyboard_setting())
 
 
-def makeReplyKeyboard_main_menu():
-    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
-    btn = types.KeyboardButton('Настройки')
-    markup.add(btn)
-    return markup
+# ==================== Обработка текста END==================== #
 
 def start_bot(request):
     if settings.DEBUG:
