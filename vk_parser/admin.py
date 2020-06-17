@@ -1,8 +1,9 @@
 from django import forms
 from django.contrib import admin
-from .models import Cities, VKGroups
+from .models import Cities, VKGroups, ProductСategory
 
 admin.site.register(Cities)
+admin.site.register(ProductСategory)
 
 
 class VKGroupsAdminForm(forms.ModelForm):

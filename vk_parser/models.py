@@ -29,4 +29,12 @@ class VKGroups(models.Model):
         return self.title
 
 
+class ProductСategory(models.Model):
+    category = models.CharField('Категория', max_length=250)
 
+    class Meta:
+        verbose_name = 'категорию'
+        verbose_name_plural = 'Категории продуктов'
+
+    def __str__(self):
+        return self.category
