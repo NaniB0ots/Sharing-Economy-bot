@@ -6,6 +6,8 @@ from django.shortcuts import render
 from django.conf import settings
 from time import sleep
 
+from vk_parser.models import Cities
+
 from django.views.decorators.csrf import csrf_exempt
 
 bot = telebot.TeleBot(settings.TG_TOKEN, threaded=False)
@@ -55,30 +57,31 @@ def handle_query(message):
         # Записываем в БД город пользователя
 
         # Выводим сообщение со списком категорий
+        markup = makeInlineKeyboard_chooseCategory()
+        markup.add(types.InlineKeyboardButton(text='➡️ Завершить регистрацию ⬅️', callback_data='end_reg'))
         bot.edit_message_text(message_id=message_id, chat_id=chat_id,
-                              text='Выберите категории продуктов о которых вам будут приходить уведомления',
-                              reply_markup=makeInlineKeyboard_chooseCategory())
+                              text='Выберите категории продуктов о которых вам будут и не будут приходить уведомления',
+                              reply_markup=markup)
 
 
-def makeInlineKeyboard_chooseCity(cities=[]):
-    cities = ['Иркутск', 'Москва', 'СПБ']
+def makeInlineKeyboard_chooseCity():
+    cities = Cities.objects.all()
     markup = types.InlineKeyboardMarkup()
     for city in cities:
-        data = json.dumps({"city_id": ''})
-        markup.add(types.InlineKeyboardButton(text=city, callback_data=data))
+        data = json.dumps({"city_id": city.id})
+        markup.add(types.InlineKeyboardButton(text=str(city), callback_data=data))
     return markup
 
 
 def makeInlineKeyboard_chooseCategory():
-    categories = ['Овощи фрукты, орехи ❌', 'Крупы, макаронные изделия ✅', 'Мясное, рыба ❌', 'Соки, воды ❌',
-                  'Хлебобулочные и кондитерские изделия ✅', 'Консервы ❌', 'Алкоголь ❌', 'Молочная продукция ✅', 'Готовые блюда ✅']
+    categories = ['Овощи фрукты, орехи ✅', 'Крупы, макаронные изделия ✅', 'Мясное, рыба ✅', 'Соки, воды ✅',
+                  'Хлебобулочные и кондитерские изделия ✅', 'Консервы ✅', 'Алкоголь ✅', 'Молочная продукция ✅',
+                  'Готовые блюда ✅']
+
     markup = types.InlineKeyboardMarkup()
     for category in categories:
         data = json.dumps({"category_id": ''})
         markup.add(types.InlineKeyboardButton(text=category, callback_data=data))
-    markup.add(types.InlineKeyboardButton(text='________________', callback_data='None'))
-    markup.add(types.InlineKeyboardButton(text='➡️ Завершить регистрацию ⬅️', callback_data='end_reg'))
-
     return markup
 
 
