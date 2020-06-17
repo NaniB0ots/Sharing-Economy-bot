@@ -9,7 +9,7 @@ class TGUsersAdminForm(forms.ModelForm):
         fields = '__all__'
 
 
-class ArticlesAdmin(admin.ModelAdmin):
+class TGUsersAdmin(admin.ModelAdmin):
     form = TGUsersAdminForm
     list_display = ('chat_id', 'city', 'created')
     list_filter = ('city', 'created')
@@ -18,4 +18,4 @@ class ArticlesAdmin(admin.ModelAdmin):
     ordering = ('created',)
 
 
-admin.site.register(TGUsers, ArticlesAdmin)
+admin.site.register(TGUsers, TGUsersAdmin)
