@@ -1,9 +1,9 @@
 import requests
 version = '5.110'
 domain = 'sharingfood'
-city = 'Москва'
+city = {'Москва','Санкт-Петербург','Иркутск'}
 count = 20
-def vk_pars(token,version,domain,city,count=10):
+def vk_pars(token,version,domain,city,count=20):
     back = []
     response = requests.get('https://api.vk.com/method/wall.get',
                             params={
@@ -16,9 +16,12 @@ def vk_pars(token,version,domain,city,count=10):
     data = response.json()
     print(data)
     for i in range(data['response']['items'].__len__()):
-        if city in data['response']['items'][i]['text']:
-            print('+')
-            back.append(data['response']['items'][i])
+        temp_data = data['response']['items'][i]['text'].replace(',','').replace('.','').replace('!','').replace('?','').split()
+        for j in temp_data:
+            if j in city:
+                print('+')
+                back.append(data['response']['items'][i])
+                break
     return back
 back = vk_pars(token,version,domain,city)
 print(back)
