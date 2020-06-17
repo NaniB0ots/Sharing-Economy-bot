@@ -6,7 +6,8 @@ from django.shortcuts import render
 from django.conf import settings
 from time import sleep
 
-from vk_parser.models import Cities
+from .models import TGUsers, CATEGORIES
+from vk_parser.models import Cities, ProductСategory
 
 from django.views.decorators.csrf import csrf_exempt
 
@@ -35,14 +36,13 @@ def start_message(message):
 last_data = {}  # Информация о последней нажатой кнопке пользователем
 
 
-# ==================== Обработка Inline кнопок ==================== #
+# ==================== Обработка Inline кнопок START ==================== #
 @bot.callback_query_handler(func=lambda call: True)
 def handle_query(message):
     global last_data
     chat_id = message.message.chat.id
     message_id = message.message.message_id
     data = message.data
-
     # Проверка что пользователь не нажал одну и ту же кнопку неколько раз (с одной и той же информацией)
     if chat_id in last_data.keys() and data == last_data[chat_id]:
         return
@@ -53,17 +53,59 @@ def handle_query(message):
     if 'city_id' in data:
         data = json.loads(data)
 
-        # Записываем в БД chat_id пользователя
-        # Записываем в БД город пользователя
+        user = TGUsers()
+        user.chat_id = chat_id  # Записываем в БД chat_id пользователя
+        city = Cities.objects.get(id=data['city_id'])  # город по id
+        user.city = city  # Записываем в БД город пользователя
+        user.save()
+        user.categories.set(ProductСategory.objects.all())  # Добавляем все категории
+        user.save()
 
         # Выводим сообщение со списком категорий
         markup = makeInlineKeyboard_chooseCategory()
+        markup.add(types.InlineKeyboardButton(text='Назад', callback_data='chooseCity'))
         markup.add(types.InlineKeyboardButton(text='➡️ Завершить регистрацию ⬅️', callback_data='end_reg'))
         bot.edit_message_text(message_id=message_id, chat_id=chat_id,
                               text='Выберите категории продуктов о которых вам будут и не будут приходить уведомления',
                               reply_markup=markup)
 
+    # Кнопка назад при выборе категории при регистрации
+    if 'chooseCity' in data:
+        bot.edit_message_text(message_id=message_id, chat_id=chat_id,
+                              text='Для того чтобы начать пользоваться моими функциями, '
+                                   'пройдите небольшую регистрацию\n'
+                                   'Выберите город',
+                              reply_markup=makeInlineKeyboard_chooseCity())
 
+    # При нажатии на категорию
+    if 'category_id' in data:
+        data = json.loads(data)
+        old_markup = message.message.json['reply_markup']['inline_keyboard']
+        markup = types.InlineKeyboardMarkup()
+
+        for item in old_markup:
+            callback_data = item[0]['callback_data']
+            text = item[0]['text']
+            if callback_data == message.data:
+                category = ProductСategory.objects.get(id=data['category_id'])
+                if text[-1] == '✅':
+                    text = text[:-1] + '❌'
+                    user = TGUsers.objects.get(chat_id=chat_id)
+                    user.categories.remove(category)  # Удаляем одну категорию
+                    user.save()
+                else:
+                    text = text[:-1] + '✅'
+                    user = TGUsers.objects.get(chat_id=chat_id)
+                    user.categories.add(category)  # Добавляем категорию
+                    user.save()
+            markup.add(types.InlineKeyboardButton(text=text, callback_data=callback_data))
+
+        bot.edit_message_reply_markup(message_id=message_id, chat_id=chat_id,
+                                      reply_markup=markup)
+        del last_data[chat_id]
+
+
+# ==================== Обработка Inline кнопок END ==================== #
 def makeInlineKeyboard_chooseCity():
     cities = Cities.objects.all()
     markup = types.InlineKeyboardMarkup()
@@ -73,15 +115,11 @@ def makeInlineKeyboard_chooseCity():
     return markup
 
 
-def makeInlineKeyboard_chooseCategory():
-    categories = ['Овощи фрукты, орехи ✅', 'Крупы, макаронные изделия ✅', 'Мясное, рыба ✅', 'Соки, воды ✅',
-                  'Хлебобулочные и кондитерские изделия ✅', 'Консервы ✅', 'Алкоголь ✅', 'Молочная продукция ✅',
-                  'Готовые блюда ✅']
-
+def makeInlineKeyboard_chooseCategory(id=None, new_action=''):
     markup = types.InlineKeyboardMarkup()
-    for category in categories:
-        data = json.dumps({"category_id": ''})
-        markup.add(types.InlineKeyboardButton(text=category, callback_data=data))
+    for key in CATEGORIES.keys():
+        data = json.dumps({"category_id": key})
+        markup.add(types.InlineKeyboardButton(text=CATEGORIES[key] + ' ✅', callback_data=data))
     return markup
 
 
