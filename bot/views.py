@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.conf import settings
 from time import sleep
 
-from .models import TGUsers, CATEGORIES
+from .models import TGUsers
 from vk_parser.models import Cities, ProductСategory
 
 from django.views.decorators.csrf import csrf_exempt
@@ -20,9 +20,16 @@ def webhook(request):
     return HttpResponse(status=200)
 
 
+# Команда /start
 @bot.message_handler(commands=['start'])
 def start_message(message):
     chat_id = message.chat.id
+
+    # Если пользователь уже есть в БД, удаляем его
+    user = TGUsers.objects.filter(chat_id=chat_id)
+    if user:
+        user.delete()
+
     bot.send_message(chat_id=chat_id, text='Привет!\nЯ бот для фудшеринга\n\n'
                                            'Основные команды:\n'
                                            '/info - что такое Фудшеринг\n'
@@ -115,11 +122,12 @@ def makeInlineKeyboard_chooseCity():
     return markup
 
 
-def makeInlineKeyboard_chooseCategory(id=None, new_action=''):
+def makeInlineKeyboard_chooseCategory():
+    categories = ProductСategory.objects.all()
     markup = types.InlineKeyboardMarkup()
-    for key in CATEGORIES.keys():
-        data = json.dumps({"category_id": key})
-        markup.add(types.InlineKeyboardButton(text=CATEGORIES[key] + ' ✅', callback_data=data))
+    for cat in categories:
+        data = json.dumps({"category_id": cat.id})
+        markup.add(types.InlineKeyboardButton(text=str(cat) + ' ✅', callback_data=data))
     return markup
 
 
