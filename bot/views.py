@@ -85,6 +85,53 @@ def start_message(message):
                      reply_markup=makeInlineKeyboard_chooseCity(status_registration=True))
 
 
+# Команда /info
+@bot.message_handler(commands=['info'])
+def info(message):
+    chat_id = message.chat.id
+    bot.send_message(chat_id=chat_id,
+                     text='Фудшеринг — это практика распределения продуктов питания, '
+                          'как правило с истекающим (не истекшим) '
+                          'сроком годности, между членами сообщества с '
+                          'помощью специальных организаций или онлайн-платформ.\n\n'
+                          'Чат бот предназначен для для поиска объявлений в социальных '
+                          'сетях о безвозмездной передаче еды в рамках проекта 1 МЛН ТОНН')
+
+
+# Команда /change_city
+@bot.message_handler(commands=['change_city'])
+def change_city(message):
+    chat_id = message.chat.id
+
+    markup = makeInlineKeyboard_chooseCity(chat_id=chat_id)
+    markup.add(types.InlineKeyboardButton(text='Сохранить', callback_data='save'))
+    bot.send_message(chat_id=chat_id, text='Изменить город',
+                     reply_markup=markup)
+
+
+# Команда /change_categories
+@bot.message_handler(commands=['change_categories'])
+def change_categories(message):
+    chat_id = message.chat.id
+
+    markup = edit_category(chat_id)
+    bot.send_message(chat_id=chat_id, text='Изменить категории',
+                     reply_markup=markup)
+
+
+# Команда /help
+@bot.message_handler(commands=['help'])
+def help_command(message):
+    chat_id = message.chat.id
+
+    bot.send_message(chat_id=chat_id, text='Основные команды:\n'
+                                           '/info - что такое Фудшеринг\n'
+                                           '/change_city - изменить город\n'
+                                           '/change_categories - изменить категории\n'
+                                           '/help - список основных команд\n',
+                     reply_markup=makeReplyKeyboard_main_menu())
+
+
 last_data = {}  # Информация о последней нажатой кнопке пользователем
 
 
@@ -95,11 +142,12 @@ def handle_query(message):
     chat_id = message.message.chat.id
     message_id = message.message.message_id
     data = message.data
+
     # Проверка что пользователь не нажал одну и ту же кнопку неколько раз (с одной и той же информацией)
     if chat_id in last_data.keys() and data == last_data[chat_id]:
         return
     last_data[chat_id] = data
-    print(data)
+    print('callback_data:', data)
 
     # После того как пользователь выбрал город
     if 'city_id' in data:
@@ -116,7 +164,8 @@ def handle_query(message):
             markup.add(types.InlineKeyboardButton(text='Назад', callback_data='chooseCity'))
             markup.add(types.InlineKeyboardButton(text='➡️ Завершить регистрацию ⬅️', callback_data='end_reg'))
             bot.edit_message_text(message_id=message_id, chat_id=chat_id,
-                                  text='Выберите категории продуктов о которых вам будут приходить уведомления',
+                                  text='Выберите категории продуктов о которых вам будут приходить уведомления\n\n'
+                                       'Категории можено будет позже изменить в настройках',
                                   reply_markup=markup)
         else:  # Если пользователь меняет город в настройках
             markup = makeInlineKeyboard_chooseCity(chat_id=chat_id)
@@ -177,20 +226,8 @@ def handle_query(message):
                                                '/help - список основных команд\n',
                          reply_markup=makeReplyKeyboard_main_menu())
     elif 'edit_category' in data:
-        user = TGUsers.objects.get(chat_id=chat_id)
-        user_categories = user.categories.all()
-        categories = ProductСategory.objects.all()
-        markup = types.InlineKeyboardMarkup()
 
-        for cat in categories:
-            if cat in user_categories:
-                status = ' ✅'
-            else:
-                status = ''
-            callback_data = json.dumps({"category_id": cat.id})
-            markup.add(types.InlineKeyboardButton(text=str(cat) + status, callback_data=callback_data))
-        markup.add(types.InlineKeyboardButton(text='Сохранить', callback_data='save'))
-
+        markup = edit_category(chat_id=chat_id)
         bot.edit_message_text(message_id=message_id, chat_id=chat_id, text='Изменить категории',
                               reply_markup=markup)
 
@@ -200,15 +237,30 @@ def handle_query(message):
         bot.edit_message_text(message_id=message_id, chat_id=chat_id, text='Изменить город',
                               reply_markup=markup)
 
-
     elif 'close' in data:
         bot.delete_message(chat_id=chat_id, message_id=message_id)
+
     elif 'save' in data:
         bot.delete_message(chat_id=chat_id, message_id=message_id)
-        bot.send_message(chat_id=chat_id, text='Настройки успешно изменены')
+        bot.send_message(chat_id=chat_id, text='Настройки успешно сохранены')
 
 
 # ==================== Обработка Inline кнопок END ==================== #
+def edit_category(chat_id: int):
+    user = TGUsers.objects.get(chat_id=chat_id)
+    user_categories = user.categories.all()
+    categories = ProductСategory.objects.all()
+    markup = types.InlineKeyboardMarkup()
+
+    for cat in categories:
+        if cat in user_categories:
+            status = ' ✅'
+        else:
+            status = ''
+        callback_data = json.dumps({"category_id": cat.id})
+        markup.add(types.InlineKeyboardButton(text=str(cat) + status, callback_data=callback_data))
+    markup.add(types.InlineKeyboardButton(text='Сохранить', callback_data='save'))
+    return markup
 
 
 # ==================== Обработка текста START==================== #
@@ -219,6 +271,14 @@ def text(message):
 
     if 'Настройки' in data:
         bot.send_message(chat_id=chat_id, text='Настройки ⚙️', reply_markup=makeInlineKeyboard_setting())
+    else:
+        bot.send_message(chat_id=chat_id, text='Я вас не понимаю 😞')
+        bot.send_message(chat_id=chat_id, text='Основные команды:\n'
+                                               '/info - что такое Фудшеринг\n'
+                                               '/change_city - изменить город\n'
+                                               '/change_categories - изменить категории\n'
+                                               '/help - список основных команд\n',
+                         reply_markup=makeReplyKeyboard_main_menu())
 
 
 # ==================== Обработка текста END==================== #
