@@ -20,12 +20,23 @@ def webhook(request):
     return HttpResponse(status=200)
 
 
-def makeInlineKeyboard_chooseCity():
+def makeInlineKeyboard_chooseCity(status_registration=False, chat_id: int = None):
     cities = Cities.objects.all()
+    old_city = ''
+    # Если пользователь меняет город в настройках
+    if not status_registration:
+        if chat_id:
+            user = TGUsers.objects.get(chat_id=chat_id)
+            old_city = user.city
+
     markup = types.InlineKeyboardMarkup()
     for city in cities:
-        data = json.dumps({"city_id": city.id})
-        markup.add(types.InlineKeyboardButton(text=str(city), callback_data=data))
+        data = json.dumps({"city_id": city.id, "registration": status_registration})
+        status = ''
+        if city == old_city:  # Если пользователь меняет город в настройках, дописываем ✅ в конец слова
+            status = ' ✅'
+
+        markup.add(types.InlineKeyboardButton(text=str(city) + status, callback_data=data))
     return markup
 
 
@@ -63,11 +74,15 @@ def start_message(message):
     if user:
         user.delete()
 
+    user = TGUsers()
+    user.chat_id = chat_id  # Записываем в БД chat_id пользователя
+    user.save()
+
     bot.send_message(chat_id=chat_id, text='Привет!\nЯ бот для фудшеринга')
     bot.send_message(chat_id=chat_id,
                      text='Для того чтобы начать пользоваться моими функциями, пройдите небольшую регистрацию\n'
                           'Выберите город',
-                     reply_markup=makeInlineKeyboard_chooseCity())
+                     reply_markup=makeInlineKeyboard_chooseCity(status_registration=True))
 
 
 last_data = {}  # Информация о последней нажатой кнопке пользователем
@@ -90,19 +105,24 @@ def handle_query(message):
     if 'city_id' in data:
         data = json.loads(data)
 
-        user = TGUsers()
-        user.chat_id = chat_id  # Записываем в БД chat_id пользователя
+        user = TGUsers.objects.get(chat_id=chat_id)
         city = Cities.objects.get(id=data['city_id'])  # город по id
         user.city = city  # Записываем в БД город пользователя
         user.save()
 
-        # Выводим сообщение со списком категорий
-        markup = makeInlineKeyboard_chooseCategory()
-        markup.add(types.InlineKeyboardButton(text='Назад', callback_data='chooseCity'))
-        markup.add(types.InlineKeyboardButton(text='➡️ Завершить регистрацию ⬅️', callback_data='end_reg'))
-        bot.edit_message_text(message_id=message_id, chat_id=chat_id,
-                              text='Выберите категории продуктов о которых вам будут приходить уведомления',
-                              reply_markup=markup)
+        if data['registration']:  # Если пользователь проходит регистрацию
+            # Выводим сообщение со списком категорий
+            markup = makeInlineKeyboard_chooseCategory()
+            markup.add(types.InlineKeyboardButton(text='Назад', callback_data='chooseCity'))
+            markup.add(types.InlineKeyboardButton(text='➡️ Завершить регистрацию ⬅️', callback_data='end_reg'))
+            bot.edit_message_text(message_id=message_id, chat_id=chat_id,
+                                  text='Выберите категории продуктов о которых вам будут приходить уведомления',
+                                  reply_markup=markup)
+        else:  # Если пользователь меняет город в настройках
+            markup = makeInlineKeyboard_chooseCity(chat_id=chat_id)
+            markup.add(types.InlineKeyboardButton(text='Сохранить', callback_data='save'))
+            bot.edit_message_reply_markup(message_id=message_id, chat_id=chat_id,
+                                          reply_markup=markup)
 
     # Кнопка назад при выборе категории при регистрации
     elif 'chooseCity' in data:
@@ -175,7 +195,11 @@ def handle_query(message):
                               reply_markup=markup)
 
     elif 'edit_city' in data:
-        pass
+        markup = makeInlineKeyboard_chooseCity(chat_id=chat_id)
+        markup.add(types.InlineKeyboardButton(text='Сохранить', callback_data='save'))
+        bot.edit_message_text(message_id=message_id, chat_id=chat_id, text='Изменить город',
+                              reply_markup=markup)
+
 
     elif 'close' in data:
         bot.delete_message(chat_id=chat_id, message_id=message_id)
