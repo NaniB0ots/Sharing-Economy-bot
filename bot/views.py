@@ -1,7 +1,7 @@
 import telebot
 import json
 from telebot import types
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
 from django.conf import settings
 from time import sleep
@@ -292,6 +292,16 @@ def start_bot(request):
     else:
         return HttpResponse('DEBUG False')
 
+def send_post(request):
+    # if request.method == 'POST':
+    markup = types.InlineKeyboardMarkup()
+    btn = types.InlineKeyboardButton(text='Перейти к посту', url='https://vk.com/sharingfood_irk?w=wall-129690210_5095')
+    markup.add(btn)
+    users = TGUsers.objects.all()
+    for user in users:
+        bot.send_message(chat_id=user.chat_id, text='https://vk.com/sharingfood_irk?w=wall-129690210_5095', reply_markup=markup)
+    # else:
+    #     return HttpResponseBadRequest()
 
 # ==================== WEBHOOK ==================== #
 if not settings.DEBUG:
