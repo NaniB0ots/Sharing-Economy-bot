@@ -34,7 +34,7 @@ def makeInlineKeyboard_chooseCategory():
     markup = types.InlineKeyboardMarkup()
     for cat in categories:
         data = json.dumps({"category_id": cat.id})
-        markup.add(types.InlineKeyboardButton(text=str(cat) + ' ✅', callback_data=data))
+        markup.add(types.InlineKeyboardButton(text=str(cat), callback_data=data))
     return markup
 
 
@@ -95,15 +95,13 @@ def handle_query(message):
         city = Cities.objects.get(id=data['city_id'])  # город по id
         user.city = city  # Записываем в БД город пользователя
         user.save()
-        user.categories.set(ProductСategory.objects.all())  # Добавляем все категории
-        user.save()
 
         # Выводим сообщение со списком категорий
         markup = makeInlineKeyboard_chooseCategory()
         markup.add(types.InlineKeyboardButton(text='Назад', callback_data='chooseCity'))
         markup.add(types.InlineKeyboardButton(text='➡️ Завершить регистрацию ⬅️', callback_data='end_reg'))
         bot.edit_message_text(message_id=message_id, chat_id=chat_id,
-                              text='Выберите категории продуктов о которых вам будут и не будут приходить уведомления',
+                              text='Выберите категории продуктов о которых вам будут приходить уведомления',
                               reply_markup=markup)
 
     # Кнопка назад при выборе категории при регистрации
@@ -129,12 +127,12 @@ def handle_query(message):
             if callback_data == message.data:
                 category = ProductСategory.objects.get(id=data['category_id'])
                 if text[-1] == '✅':
-                    text = text[:-1] + '❌'
+                    text = text[:-1]
                     user = TGUsers.objects.get(chat_id=chat_id)
                     user.categories.remove(category)  # Удаляем одну категорию
                     user.save()
                 else:
-                    text = text[:-1] + '✅'
+                    text += '✅'
                     user = TGUsers.objects.get(chat_id=chat_id)
                     user.categories.add(category)  # Добавляем категорию
                     user.save()
@@ -168,13 +166,13 @@ def handle_query(message):
             if cat in user_categories:
                 status = ' ✅'
             else:
-                status = ' ❌'
+                status = ''
             callback_data = json.dumps({"category_id": cat.id})
             markup.add(types.InlineKeyboardButton(text=str(cat) + status, callback_data=callback_data))
         markup.add(types.InlineKeyboardButton(text='Сохранить', callback_data='save'))
 
         bot.edit_message_text(message_id=message_id, chat_id=chat_id, text='Изменить категории',
-                                      reply_markup=markup)
+                              reply_markup=markup)
 
     elif 'edit_city' in data:
         pass
@@ -184,8 +182,6 @@ def handle_query(message):
     elif 'save' in data:
         bot.delete_message(chat_id=chat_id, message_id=message_id)
         bot.send_message(chat_id=chat_id, text='Настройки успешно изменены')
-
-
 
 
 # ==================== Обработка Inline кнопок END ==================== #
