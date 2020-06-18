@@ -212,12 +212,17 @@ def handle_query(message):
         del last_data[chat_id]
 
     elif 'end_reg' in data:
-        bot.edit_message_text(message_id=message_id, chat_id=chat_id,
-                              text='Вы успешно завершили регистрацию!😉\n'
-                                   'Скоро Вы начнете получать уведомления о новых раздачах\n\n'
-                                   'Теперь вам доступны настройки.\n'
-                                   'Там можно изменить город и категории продуктов '
-                                   'о которых вы хотите получать уведомления')
+        # Проверка, выбрал ли пользователь хоть одну категорию
+        user = TGUsers.objects.get(chat_id=chat_id)
+        if not user.categories.all():
+            bot.send_message(chat_id=chat_id, text='Вы не выбрали ни одной категории!')
+            return
+        bot.delete_message(message_id=message_id, chat_id=chat_id)
+        bot.send_message(chat_id=chat_id, text='Вы успешно завершили регистрацию!😉\n'
+                                               'Скоро Вы начнете получать уведомления о новых раздачах\n\n'
+                                               'Теперь вам доступны настройки.\n'
+                                               'Там можно изменить город и категории продуктов '
+                                               'о которых вы хотите получать уведомления')
 
         bot.send_message(chat_id=chat_id, text='Основные команды:\n'
                                                '/info - что такое Фудшеринг\n'
@@ -292,6 +297,7 @@ def start_bot(request):
     else:
         return HttpResponse('DEBUG False')
 
+
 def send_post(request):
     # if request.method == 'POST':
     markup = types.InlineKeyboardMarkup()
@@ -299,9 +305,11 @@ def send_post(request):
     markup.add(btn)
     users = TGUsers.objects.all()
     for user in users:
-        bot.send_message(chat_id=user.chat_id, text='https://vk.com/sharingfood_irk?w=wall-129690210_5095', reply_markup=markup)
+        bot.send_message(chat_id=user.chat_id, text='https://vk.com/sharingfood_irk?w=wall-129690210_5095',
+                         reply_markup=markup)
     # else:
     #     return HttpResponseBadRequest()
+
 
 # ==================== WEBHOOK ==================== #
 if not settings.DEBUG:
