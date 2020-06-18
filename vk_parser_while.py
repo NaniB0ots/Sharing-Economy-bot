@@ -36,9 +36,9 @@ while (True):
             send = {'link': 'https://vk.com/'+domain+'?w=wall'+str(owner_id)+'_'+str(post_id),'category':'Da her prossish:(', 'city': data[i]['city']}
             bot_send = json.dumps(send)
             print(bot_send)
-            requests.post('https://nanib0ots.pythonanywhere.com/bot/post', bot_send)
+            requests.get('http://127.0.0.1:8000/bot/post', send, cookies={'parser_key': '12345678'})
     vk_pars_func(data)
-    time.sleep(0.5)
+    time.sleep(10)
 
 
 
