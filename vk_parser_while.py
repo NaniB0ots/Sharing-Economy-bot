@@ -31,8 +31,9 @@ while (True):
             print(i)
             domain = data[i]['group_id']
             vk_answer = vk_respons(domain,token,version)
-            post_id = vk_answer
-            send = {'link': 'https://vk.com/sharingfood?w=wall-'+domain+'_'+str(vk_answer['response']['items'][0]['id']),'category':'Da her prossish:(', 'city': data[i]['city']}
+            post_id = vk_answer['response']['items'][0]['id']
+            owner_id = vk_answer['response']['items'][0]['owner_id']
+            send = {'link': 'https://vk.com/'+domain+'?w=wall'+str(owner_id)+'_'+str(post_id),'category':'Da her prossish:(', 'city': data[i]['city']}
             bot_send = json.dumps(send)
             print(bot_send)
             requests.post('https://nanib0ots.pythonanywhere.com/bot/post', bot_send)
