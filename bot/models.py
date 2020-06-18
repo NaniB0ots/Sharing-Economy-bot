@@ -7,14 +7,10 @@ from django.utils import timezone
 from datetime import date
 from django.contrib.auth.models import User
 
-CATEGORIES = {1: 'Овощи фрукты, орехи', 2: 'Крупы, макаронные изделия', 3: 'Мясное, рыба', 4: 'Соки, воды',
-              5: 'Хлебобулочные и кондитерские изделия', 6: 'Консервы', 7: 'Алкоголь', 8: 'Молочная продукция',
-              9: 'Готовые блюда'}
-
 
 class TGUsers(models.Model):
     chat_id = models.IntegerField('chat_id', unique=True)
-    city = models.ForeignKey(Cities, verbose_name=u'Город', on_delete=models.DO_NOTHING)
+    city = models.ForeignKey(Cities, verbose_name=u'Город', on_delete=models.DO_NOTHING, null=True)
     categories = models.ManyToManyField(ProductСategory, verbose_name=u'Категория')
 
     created = models.DateTimeField('Дата регистрации', auto_now_add=True)
