@@ -324,7 +324,6 @@ def send_post(request):
     if request.COOKIES['parser_key'] == '12345678':  # проверяем, что запрос от парсера
         post = request.GET
         markup = types.InlineKeyboardMarkup()
-        print(post)
         btn = types.InlineKeyboardButton(text='Перейти к посту',
                                          url=post.get('link'))
         markup.add(btn)
@@ -333,13 +332,11 @@ def send_post(request):
             bot.send_message(chat_id=user.chat_id, text=post.get('link'),
                              reply_markup=markup)
 
-        return HttpResponse('it is hot')
+        return HttpResponse('ok')
     else:
         return HttpResponseBadRequest()
 
 
-# else:
-# return HttpResponseBadRequest()
 
 
 # ==================== WEBHOOK ==================== #
