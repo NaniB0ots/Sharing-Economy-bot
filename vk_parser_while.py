@@ -2,19 +2,13 @@ import token_VK
 import requests
 import json
 import time
-<<<<<<< HEAD
 import img_processing
 #https://nanib0ots.pythonanywhere.com/bot/post
 #vk_answer['response']['items'][0]['date']
 #vk_answer['response']['items'][0]['owner_id']
-def write_json(post_id,owner_id,indent = 2, ensure_ascii = False):
-=======
-
-
 # https://nanib0ots.pythonanywhere.com/bot/post
 
 def write_json(post_id, owner_id):
->>>>>>> 0a5c714ac18349547747879e79521c83c026e837
     post_id = str(post_id)
     owner_id = str(owner_id)
     flag = False
@@ -48,15 +42,12 @@ def vk_respons(domain, token, version, count=1, offset=1):
                             )
     vk_answer = response.json()
     return vk_answer
-<<<<<<< HEAD
 def vk_pars_func(data, count = 1):
     token = token_VK.token2
-=======
 
 
 def vk_pars_func(data):
     token = token_VK.token
->>>>>>> 0a5c714ac18349547747879e79521c83c026e837
     version = token_VK.version
     for i in range(len(data)):
         domain = data[i]['group_id']
@@ -69,7 +60,6 @@ def vk_pars_func(data):
                     'category': 'Da her prossish:(', 'city': data[i]['city']}
             bot_send = json.dumps(send)
             print(bot_send)
-<<<<<<< HEAD
             requests.get('https://nanib0ots.pythonanywhere.com/bot/post', send, cookies={'parser_key': '12345678'})
             for n in range(vk_answer['response']['items'][0]['attachments'].__len__()):
                 path = './imgs/'+str(owner_id)+'_'+str(post_id)+'('+str(n)+').jpg'
@@ -90,19 +80,18 @@ while (True):
 #vk_answer['response']['items'][0]['attachments'].__len__()
 #vk_answer['response']['items'][0]['attachments'][0]['photo']['sizes'][1]
 #
-=======
-            try:
-                response = requests.get('http://127.0.0.1:8000/bot/post', send, cookies={'parser_key': '12345678'})
-                print(response)
-            except requests.exceptions.ConnectionError:
-                print('ConnectionError')
-                time.sleep(5)
-                try:
-                    requests.get('http://127.0.0.1:8000/bot/post', send, cookies={'parser_key': '12345678'})
-                except requests.exceptions.ConnectionError:
-                    print('ConnectionError')
-                    time.sleep(5)
-                    main()
+            # try:
+            #     response = requests.get('http://127.0.0.1:8000/bot/post', send, cookies={'parser_key': '12345678'})
+            #     print(response)
+            # except requests.exceptions.ConnectionError:
+            #     print('ConnectionError')
+            #     time.sleep(5)
+            #     try:
+            #         requests.get('http://127.0.0.1:8000/bot/post', send, cookies={'parser_key': '12345678'})
+            #     except requests.exceptions.ConnectionError:
+            #         print('ConnectionError')
+            #         time.sleep(5)
+            #         main()
 
 
 
@@ -126,4 +115,3 @@ def main():
 
 if __name__ == '__main__':
     main()
->>>>>>> 0a5c714ac18349547747879e79521c83c026e837
