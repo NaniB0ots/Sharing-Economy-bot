@@ -2,6 +2,7 @@ import token_VK
 import requests
 import json
 import time
+import img_processing
 #https://nanib0ots.pythonanywhere.com/bot/post
 #vk_answer['response']['items'][0]['date']
 #vk_answer['response']['items'][0]['owner_id']
@@ -38,7 +39,7 @@ def vk_respons(domain,token,version,count = 1,offset = 1):
     vk_answer = response.json()
     return vk_answer
 def vk_pars_func(data, count = 1):
-    token = token_VK.token
+    token = token_VK.token2
     version = token_VK.version
     for i in range(len(data)):
         domain = data[i]['group_id']
@@ -52,7 +53,10 @@ def vk_pars_func(data, count = 1):
             bot_send = json.dumps(send)
             print(bot_send)
             requests.get('https://nanib0ots.pythonanywhere.com/bot/post', send, cookies={'parser_key': '12345678'})
-
+            for n in range(vk_answer['response']['items'][0]['attachments'].__len__()):
+                path = './imgs/'+str(owner_id)+'_'+str(post_id)+'('+str(n)+').jpg'
+                url = vk_answer['response']['items'][0]['attachments'][0]['photo']['sizes'][2]['url']
+                img_processing.downlaod_img(url, path)
 while (True):
     #stop = input()
     data = [
@@ -63,4 +67,8 @@ while (True):
     vk_pars_func(data)
     time.sleep(0.5)
 
-    #vk_pars_func(data)
+#vk_pars_func(data)
+#vk_answer['response']['items'][0]['attachments']
+#vk_answer['response']['items'][0]['attachments'].__len__()
+#vk_answer['response']['items'][0]['attachments'][0]['photo']['sizes'][1]
+#
