@@ -176,14 +176,14 @@ def handle_query(message):
 
     # Кнопка назад при выборе категории при регистрации
     elif 'chooseCity' in data:
-        # Удаляем пользователя из БД
-        user = TGUsers.objects.filter(chat_id=chat_id)
-        user.delete()
+        user = TGUsers.objects.get(chat_id=chat_id)
+        user.city = None  # Записываем в БД город пользователя
+        user.save()
         bot.edit_message_text(message_id=message_id, chat_id=chat_id,
                               text='Для того чтобы начать пользоваться моими функциями, '
                                    'пройдите небольшую регистрацию\n'
                                    'Выберите город',
-                              reply_markup=makeInlineKeyboard_chooseCity())
+                              reply_markup=makeInlineKeyboard_chooseCity(status_registration=True))
 
     # При нажатии на категорию
     elif 'category_id' in data:
@@ -335,8 +335,6 @@ def send_post(request):
         return HttpResponse('ok')
     else:
         return HttpResponseBadRequest()
-
-
 
 
 # ==================== WEBHOOK ==================== #
