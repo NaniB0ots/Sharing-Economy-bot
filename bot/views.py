@@ -1,5 +1,6 @@
 import telebot
 import json
+import requests
 from telebot import types
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
@@ -299,16 +300,25 @@ def start_bot(request):
 
 
 def send_post(request):
-    # if request.method == 'POST':
-    markup = types.InlineKeyboardMarkup()
-    btn = types.InlineKeyboardButton(text='Перейти к посту', url='https://vk.com/sharingfood_irk?w=wall-129690210_5095')
-    markup.add(btn)
-    users = TGUsers.objects.all()
-    for user in users:
-        bot.send_message(chat_id=user.chat_id, text='https://vk.com/sharingfood_irk?w=wall-129690210_5095',
-                         reply_markup=markup)
-    # else:
-    #     return HttpResponseBadRequest()
+    if request.COOKIES['parser_key'] == '12345678': # проверяем, что запрос от парсера
+        post = request.GET
+        markup = types.InlineKeyboardMarkup()
+        print(post)
+        btn = types.InlineKeyboardButton(text='Перейти к посту',
+                                         url=post.get('link'))
+        markup.add(btn)
+        users = TGUsers.objects.all()
+        for user in users:
+            bot.send_message(chat_id=user.chat_id, text=post.get('link'),
+                             reply_markup=markup)
+
+        return HttpResponse('it is hot')
+    else:
+        return HttpResponseBadRequest()
+
+
+# else:
+# return HttpResponseBadRequest()
 
 
 # ==================== WEBHOOK ==================== #
