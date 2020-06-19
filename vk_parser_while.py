@@ -47,7 +47,7 @@ def vk_pars_func(data, count = 1):
 
 
 def vk_pars_func(data):
-    token = token_VK.token
+    token = token_VK.token4
     version = token_VK.version
     for i in range(len(data)):
         domain = data[i]['group_id']
