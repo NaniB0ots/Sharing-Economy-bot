@@ -2,13 +2,13 @@ import telebot
 import json
 import requests
 from telebot import types
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django.shortcuts import render
 from django.conf import settings
 from time import sleep
 
 from .models import TGUsers
-from vk_parser.models import Cities, ProductСategory
+from vk_parser.models import Cities, ProductСategory, VKGroups
 
 from django.views.decorators.csrf import csrf_exempt
 
@@ -299,8 +299,29 @@ def start_bot(request):
         return HttpResponse('DEBUG False')
 
 
+def get_data_to_parser_from_db(request):
+    if request.COOKIES['parser_key'] == '12345678':  # проверяем, что запрос от парсера
+        groups = VKGroups.objects.all()
+        if groups:
+            cities = []
+            data = []
+            for group in groups:
+                for name_city in group.city.all():
+                    cities.append(str(name_city))
+                data.append(
+                    {
+                        'title': group.title,
+                        'city': cities,
+                        'group_id': group.group_id
+                    }
+                )
+            data = json.dumps(data)
+            return HttpResponse(data)
+    return HttpResponseNotFound
+
+
 def send_post(request):
-    if request.COOKIES['parser_key'] == '12345678': # проверяем, что запрос от парсера
+    if request.COOKIES['parser_key'] == '12345678':  # проверяем, что запрос от парсера
         post = request.GET
         markup = types.InlineKeyboardMarkup()
         print(post)
