@@ -14,11 +14,11 @@ class VKGroupsAdminForm(forms.ModelForm):
 
 class VKGroupsAdmin(admin.ModelAdmin):
     form = VKGroupsAdminForm
-    list_display = ('title', 'city', 'created')
+    list_display = ('title', 'created')
     list_filter = ('city', 'created')
     search_fields = ('title', 'city', 'chat_id')
     date_hierarchy = 'created'
-    ordering = ('created', 'city')
+    ordering = ('created',)
 
 
 admin.site.register(VKGroups, VKGroupsAdmin)

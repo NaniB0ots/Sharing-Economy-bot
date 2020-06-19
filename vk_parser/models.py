@@ -15,7 +15,7 @@ class Cities(models.Model):
 
 class VKGroups(models.Model):
     title = models.CharField('Название группы', max_length=250)
-    city = models.ForeignKey(Cities, verbose_name=u'Город', on_delete=models.DO_NOTHING)
+    city = models.ManyToManyField(Cities, verbose_name=u'Город')
     group_id = models.CharField('id группы', max_length=250)
 
     created = models.DateTimeField('Дата добавления', auto_now_add=True)

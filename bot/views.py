@@ -1,13 +1,14 @@
 import telebot
 import json
+import requests
 from telebot import types
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django.shortcuts import render
 from django.conf import settings
 from time import sleep
 
 from .models import TGUsers
-from vk_parser.models import Cities, ProductСategory
+from vk_parser.models import Cities, ProductСategory, VKGroups
 
 from django.views.decorators.csrf import csrf_exempt
 
@@ -175,14 +176,14 @@ def handle_query(message):
 
     # Кнопка назад при выборе категории при регистрации
     elif 'chooseCity' in data:
-        # Удаляем пользователя из БД
-        user = TGUsers.objects.filter(chat_id=chat_id)
-        user.delete()
+        user = TGUsers.objects.get(chat_id=chat_id)
+        user.city = None  # Записываем в БД город пользователя
+        user.save()
         bot.edit_message_text(message_id=message_id, chat_id=chat_id,
                               text='Для того чтобы начать пользоваться моими функциями, '
                                    'пройдите небольшую регистрацию\n'
                                    'Выберите город',
-                              reply_markup=makeInlineKeyboard_chooseCity())
+                              reply_markup=makeInlineKeyboard_chooseCity(status_registration=True))
 
     # При нажатии на категорию
     elif 'category_id' in data:
@@ -298,17 +299,42 @@ def start_bot(request):
         return HttpResponse('DEBUG False')
 
 
+def get_data_to_parser_from_db(request):
+    if request.COOKIES['parser_key'] == '12345678':  # проверяем, что запрос от парсера
+        groups = VKGroups.objects.all()
+        if groups:
+            cities = []
+            data = []
+            for group in groups:
+                for name_city in group.city.all():
+                    cities.append(str(name_city))
+                data.append(
+                    {
+                        'title': group.title,
+                        'city': cities,
+                        'group_id': group.group_id
+                    }
+                )
+            data = json.dumps(data)
+            return HttpResponse(data)
+    return HttpResponseNotFound
+
+
 def send_post(request):
-    # if request.method == 'POST':
-    markup = types.InlineKeyboardMarkup()
-    btn = types.InlineKeyboardButton(text='Перейти к посту', url='https://vk.com/sharingfood_irk?w=wall-129690210_5095')
-    markup.add(btn)
-    users = TGUsers.objects.all()
-    for user in users:
-        bot.send_message(chat_id=user.chat_id, text='https://vk.com/sharingfood_irk?w=wall-129690210_5095',
-                         reply_markup=markup)
-    # else:
-    #     return HttpResponseBadRequest()
+    if request.COOKIES['parser_key'] == '12345678':  # проверяем, что запрос от парсера
+        post = request.GET
+        markup = types.InlineKeyboardMarkup()
+        btn = types.InlineKeyboardButton(text='Перейти к посту',
+                                         url=post.get('link'))
+        markup.add(btn)
+        users = TGUsers.objects.all()
+        for user in users:
+            bot.send_message(chat_id=user.chat_id, text=post.get('link'),
+                             reply_markup=markup)
+
+        return HttpResponse('ok')
+    else:
+        return HttpResponseBadRequest()
 
 
 # ==================== WEBHOOK ==================== #
