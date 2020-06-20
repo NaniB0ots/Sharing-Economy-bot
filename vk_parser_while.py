@@ -46,10 +46,6 @@ def vk_respons(domain, token, version, count=1, offset=1):
     return vk_answer
 
 
-def vk_pars_func(data, count=1):
-    token = token_VK.token2
-
-
 def vk_pars_func(data):
     token = token_VK.token4
     version = token_VK.version
