@@ -335,7 +335,7 @@ def send_post(request):
         markup.add(btn)
         users = TGUsers.objects.all()
         for user in users:
-            bot.send_message(chat_id=user.chat_id, text=post.get('link'),
+            bot.send_message(chat_id=user.chat_id, text=post.get('category') + '\n' + post.get('link'),
                              reply_markup=markup)
 
         return HttpResponse('ok')
