@@ -333,10 +333,27 @@ def send_post(request):
         btn = types.InlineKeyboardButton(text='Перейти к посту',
                                          url=post.get('link'))
         markup.add(btn)
-        users = TGUsers.objects.all()
-        for user in users:
-            bot.send_message(chat_id=user.chat_id, text=post.get('category') + '\n' + post.get('link'),
-                             reply_markup=markup)
+        # users = TGUsers.objects.all()
+        # Получаем категории поста
+        post_data = post.lists()
+        for item in post_data:
+            if item[0] == 'category':
+                categories = item[1]
+
+        # Находим пользователей и отправляем сообщение
+        users_id = []
+        for category in categories:
+            categories_id = ProductСategory.objects.filter(category=category)[0].id
+            users = TGUsers.objects.filter(categories=categories_id)
+            for user in users:
+                users_id.append(user.chat_id)
+        users_id = set(users_id)
+        for chat_id in users_id:
+            try:
+                bot.send_message(chat_id=chat_id, text=post.get('link'),
+                                 reply_markup=markup)
+            except Exception as e:
+                print(e)
 
         return HttpResponse('ok')
     else:
