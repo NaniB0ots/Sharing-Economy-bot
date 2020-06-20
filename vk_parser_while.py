@@ -3,11 +3,9 @@ import requests
 import json
 import time
 import img_processing
-
-
-# https://nanib0ots.pythonanywhere.com/bot/post
-# vk_answer['response']['items'][0]['date']
-# vk_answer['response']['items'][0]['owner_id']
+#https://nanib0ots.pythonanywhere.com/bot/post
+#vk_answer['response']['items'][0]['date']
+#vk_answer['response']['items'][0]['owner_id']
 # https://nanib0ots.pythonanywhere.com/bot/post
 
 def write_json(post_id, owner_id):
@@ -44,9 +42,7 @@ def vk_respons(domain, token, version, count=1, offset=1):
                             )
     vk_answer = response.json()
     return vk_answer
-
-
-def vk_pars_func(data, count=1):
+def vk_pars_func(data, count = 1):
     token = token_VK.token2
 
 
@@ -66,15 +62,43 @@ def vk_pars_func(data):
             print(bot_send)
             requests.get('https://nanib0ots.pythonanywhere.com/bot/post', send, cookies={'parser_key': '12345678'})
             for n in range(vk_answer['response']['items'][0]['attachments'].__len__()):
-                path = './imgs/' + str(owner_id) + '_' + str(post_id) + '(' + str(n) + ').jpg'
+                path = './imgs/'+str(owner_id)+'_'+str(post_id)+'('+str(n)+').jpg'
                 url = vk_answer['response']['items'][0]['attachments'][0]['photo']['sizes'][2]['url']
                 img_processing.downlaod_img(url, path)
+while (True):
+    #stop = input()
+    data = [
+        {'title': 'Хелпфуд. Фудшеринг. Санкт-Петербург.', 'city': 'Санкт-Петербург', 'group_id': 'club_helpfoodspb'},
+        {'title': 'Фудшеринг Отдам даром еду', 'city': ['Санкт-Петербург', 'Москва'], 'group_id': 'sharingfood'},
+        {'title': 'Фудшеринг Отдам даром в Иркутске', 'city': 'Иркутск', 'group_id': 'sharingfood_irk'}
+        ]
+    vk_pars_func(data)
+    time.sleep(0.5)
+
+#vk_pars_func(data)
+#vk_answer['response']['items'][0]['attachments']
+#vk_answer['response']['items'][0]['attachments'].__len__()
+#vk_answer['response']['items'][0]['attachments'][0]['photo']['sizes'][1]
+#
+            # try:
+            #     response = requests.get('http://127.0.0.1:8000/bot/post', send, cookies={'parser_key': '12345678'})
+            #     print(response)
+            # except requests.exceptions.ConnectionError:
+            #     print('ConnectionError')
+            #     time.sleep(5)
+            #     try:
+            #         requests.get('http://127.0.0.1:8000/bot/post', send, cookies={'parser_key': '12345678'})
+            #     except requests.exceptions.ConnectionError:
+            #         print('ConnectionError')
+            #         time.sleep(5)
+            #         main()
+
 
 
 def main():
     while (True):
         try:
-            response = requests.get('https://nanib0ots.pythonanywhere.com/bot/get_data', cookies={'parser_key': '12345678'})
+            response = requests.get('http://127.0.0.1:8000/bot/get_data', cookies={'parser_key': '12345678'})
             if response.status_code != 200:
                 print(response)
                 time.sleep(5)
@@ -83,10 +107,10 @@ def main():
             print('from db: ', data)
         except requests.exceptions.ConnectionError:
             print('ConnectionError')
-            time.sleep(40)
+            time.sleep(5)
             main()
         vk_pars_func(data)
-        time.sleep(40)
+        time.sleep(5)
 
 
 if __name__ == '__main__':
