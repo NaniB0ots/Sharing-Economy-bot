@@ -350,7 +350,7 @@ def send_post(request):
         users_id = set(users_id)
         for chat_id in users_id:
             try:
-                bot.send_message(chat_id=chat_id, text=post.get('link'),
+                bot.send_message(chat_id=chat_id, text=str(categories) + '\n' + post.get('link'),
                                  reply_markup=markup)
             except Exception as e:
                 print(e)
