@@ -60,17 +60,27 @@ def vk_pars_func(data):
                     'category': 'Da her prossish:(', 'city': data[i]['city']}
             bot_send = json.dumps(send)
             print(bot_send)
+            # Отправка поста боту
             requests.get('https://nanib0ots.pythonanywhere.com/bot/post', send, cookies={'parser_key': '12345678'})
-            for n in range(vk_answer['response']['items'][0]['attachments'].__len__()):
-                path = './imgs/' + str(owner_id) + '_' + str(post_id) + '(' + str(n) + ').jpg'
-                url = vk_answer['response']['items'][0]['attachments'][0]['photo']['sizes'][2]['url']
-                img_processing.downlaod_img(url, path)
+            item = vk_answer['response']['items'][0]
+
+            if 'attachments' in item.keys():
+                attachments = item['attachments']
+                n = 0  # индекс изображения
+                for att in attachments:
+                    # Проверяем есть ли во вложениях фото
+                    if att['type'] == 'photo':
+                        path = './imgs/' + str(owner_id) + '_' + str(post_id) + '(' + str(n) + ').jpg'
+                        url = att['photo']['sizes'][2]['url']
+                        n += 1
+                        img_processing.downlaod_img(url, path)
 
 
 def main():
     while (True):
         try:
-            response = requests.get('https://nanib0ots.pythonanywhere.com/bot/get_data', cookies={'parser_key': '12345678'})
+            response = requests.get('https://nanib0ots.pythonanywhere.com/bot/get_data',
+                                    cookies={'parser_key': '12345678'})
             if response.status_code != 200:
                 print(response)
                 time.sleep(5)
