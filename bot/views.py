@@ -309,9 +309,9 @@ def get_data_to_parser_from_db(request):
     if request.COOKIES['parser_key'] == '12345678':  # проверяем, что запрос от парсера
         groups = VKGroups.objects.all()
         if groups:
-            cities = []
             data = []
             for group in groups:
+                cities = []
                 for name_city in group.city.all():
                     cities.append(str(name_city))
                 data.append(
@@ -333,7 +333,11 @@ def send_post(request):
         btn = types.InlineKeyboardButton(text='Перейти к посту',
                                          url=post.get('link'))
         markup.add(btn)
-        # users = TGUsers.objects.all()
+
+
+        # Получаем город поста
+
+
         # Получаем категории поста
         post_data = post.lists()
         for item in post_data:
