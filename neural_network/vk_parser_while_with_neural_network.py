@@ -209,6 +209,9 @@ def vk_pars_func(data):
             item = vk_answer['response']['items'][0]
 
             text = item['text']
+            print(text)
+
+
             # Определение города
             print(cities)
             if len(cities) == 1:
@@ -216,7 +219,7 @@ def vk_pars_func(data):
             else:
                 city = cities
                 for item_city in cities:
-                    if item_city in text:
+                    if item_city.lower() in text.lower():
                        city = [item_city]
                        break
 
@@ -267,7 +270,7 @@ def vk_pars_func(data):
 
             #  Отправка поста боту
             send = {'link': 'https://vk.com/' + domain + '?w=wall' + str(owner_id) + '_' + str(post_id),
-                    'category': category, 'city': city}
+                    'category': category, 'city': city, 'text': text}
             bot_send = json.dumps(send)
             print(bot_send)
             requests.get('https://nanib0ots.pythonanywhere.com/bot/post', send, cookies={'parser_key': '12345678'})
