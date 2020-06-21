@@ -334,15 +334,16 @@ def send_post(request):
                                          url=post.get('link'))
         markup.add(btn)
 
-
         # Получаем город поста
 
-
-        # Получаем категории поста
+        # Получаем категории поста, город
         post_data = post.lists()
+        print(post_data)
         for item in post_data:
             if item[0] == 'category':
                 categories = item[1]
+            elif item[0] == 'city':
+                city = item[1]
 
         # Находим пользователей и отправляем сообщение
         users_id = []
@@ -354,7 +355,7 @@ def send_post(request):
         users_id = set(users_id)
         for chat_id in users_id:
             try:
-                bot.send_message(chat_id=chat_id, text=str(categories) + '\n' + post.get('link'),
+                bot.send_message(chat_id=chat_id, text=post.get('text') + '\n' + str(categories) + '\n' + post.get('link'),
                                  reply_markup=markup)
             except Exception as e:
                 print(e)
