@@ -101,7 +101,7 @@ def info(message):
                           'Фудшеринг— это движение, участники которого бесплатно отдают '
                           'или забирают себе еду. Как правило, речь идёт об излишках продуктов, '
                           'иногда — с истекающим сроком годности.\n\n'
-                          'Чат бот предназначен для для поиска объявлений в социальных '
+                          'Чат бот предназначен для поиска объявлений в социальных '
                           'сетях о безвозмездной передаче еды в рамках проекта 1 МЛН ТОНН')
 
 
@@ -356,7 +356,7 @@ def send_post(request):
 
             categories_id = ProductСategory.objects.filter(category=category)[0].id
             users = TGUsers.objects.filter(categories=categories_id)
-            users_city = {'chat_id':'chat_id'}
+
             for user in users:
                 users_id.append(user.chat_id)
 
