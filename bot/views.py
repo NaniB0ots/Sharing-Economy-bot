@@ -1,5 +1,6 @@
 import telebot
 import json
+import numpy
 import requests
 from telebot import types
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
@@ -334,11 +335,8 @@ def send_post(request):
                                          url=post.get('link'))
         markup.add(btn)
 
-        # Получаем город поста
-
         # Получаем категории поста, город
         post_data = post.lists()
-        print(post_data)
         for item in post_data:
             if item[0] == 'category':
                 categories = item[1]
@@ -347,15 +345,32 @@ def send_post(request):
 
         # Находим пользователей и отправляем сообщение
         users_id = []
+        text = ''
         for category in categories:
+            if len(categories) > 1 and category != categories[-1]:
+                text += category + ', '
+            else:
+                text += category
+
             categories_id = ProductСategory.objects.filter(category=category)[0].id
             users = TGUsers.objects.filter(categories=categories_id)
             for user in users:
                 users_id.append(user.chat_id)
         users_id = set(users_id)
+        array = ['Хэй, привет! Посмотри, что я нашел для тебя!',
+                 'Псс, люди от меня это скрывают, но я нашел как раз то, что тебе нужно!',
+                 'Сводка инопланетных СМИ говорит, что это то что тебе нужно!',
+                 'Наконец то, я нашел это для тебя!',
+                 'А вот на это стоит обратить внимание!',
+                 'Погляди, погляди, это оно!',
+                 'Как насчет, чтобы записаться на раздачу вот этого продукта?!',
+                 'Я уверен, что тебя это заинтересует!',
+                 'Посмотри, эти добрые люди раздают как раз то, что ты хотел!',
+                 'Прогуляемся, заберем?!']
+        Random = numpy.random.choice(array, size=1)
         for chat_id in users_id:
             try:
-                bot.send_message(chat_id=chat_id, text=post.get('text') + '\n' + str(categories) + '\n' + post.get('link'),
+                bot.send_message(chat_id=chat_id, text=str(Random[0]) + '\nИскусственный интеллект распознал: ' + text + '\n' + post.get('link'),
                                  reply_markup=markup)
             except Exception as e:
                 print(e)
