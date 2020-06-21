@@ -356,8 +356,10 @@ def send_post(request):
 
             categories_id = ProductСategory.objects.filter(category=category)[0].id
             users = TGUsers.objects.filter(categories=categories_id)
+            users_city = {'chat_id':'chat_id'}
             for user in users:
                 users_id.append(user.chat_id)
+
         users_id = set(users_id)
         array = ['Хэй, привет! Посмотри, что я нашел для тебя!',
                  'Псс, люди от меня это скрывают, но я нашел как раз то, что тебе нужно!',
@@ -372,8 +374,11 @@ def send_post(request):
         Random = numpy.random.choice(array, size=1)
         for chat_id in users_id:
             try:
-                bot.send_message(chat_id=chat_id, text=str(Random[0]) + '\nИскусственный интеллект распознал: ' + text + '\n' + post.get('link'),
-                                 reply_markup=markup)
+                user = TGUsers.objects.filter(chat_id=chat_id)[0]
+                for c in city:
+                    if c == str(user.city): # Смотрим на город
+                        bot.send_message(chat_id=chat_id, text=str(Random[0]) + '\nИскусственный интеллект распознал: ' + text + '\n' + post.get('link'),
+                                         reply_markup=markup)
             except Exception as e:
                 print(e)
 
