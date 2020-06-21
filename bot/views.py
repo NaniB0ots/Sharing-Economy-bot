@@ -348,9 +348,11 @@ def send_post(request):
         text = ''
         for category in categories:
             if len(categories) > 1 and category != categories[-1]:
-                text += category + ', '
+                if not category in text:
+                    text += category + ', '
             else:
-                text += category
+                if not category in text:
+                    text += category
 
             categories_id = ProductСategory.objects.filter(category=category)[0].id
             users = TGUsers.objects.filter(categories=categories_id)
