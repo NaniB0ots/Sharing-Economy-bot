@@ -9,8 +9,8 @@ Original file is located at
 #Гугл диск
 """
 
-from google.colab import drive
-drive.mount('/content/drive')
+#from google.colab import drive
+#drive.mount('/content/drive')
 
 """#Нейросеть"""
 
@@ -58,9 +58,13 @@ model.summary()
 
 model.compile(loss='categorical_crossentropy', optimizer="rmsprop", metrics=['accuracy'])
 
-#model.load_weights("/content/drive/My Drive/Sharing-Economy-neural-network/model-cnn-1.h5")
-#model.load_weights("/content/drive/My Drive/Sharing-Economy-neural-network/model-cnn-S1.h5")
-model.load_weights("/content/drive/My Drive/Sharing-Economy-neural-network/model-cnn-S2.h5")
+"""##Веса модели"""
+
+# Веса модели
+# Файл model-cnn-S2.h5
+# Укажите путь к файлу
+model.load_weights("/content/drive/My Drive/Sharing-Economy-neural-network/model-cnn-S2.h5") 
+#model.load_weights("/content/model-cnn-S2.h5")
 
 """#Классификация
 
@@ -94,10 +98,12 @@ def distribution_by_category():
 
     predict = model.predict(test_generator, steps=np.ceil(nb_samples/batch_size))
 
-    cat = {0:'Алкоголь', 1:'Готовые блюда', 2:'Консервы', 3:'Крупы', 4:'Молочка', 5:'Мясо рыба', 6:'Орехи фрукты овощи', 7:'Соки воды', 8:'Хлеб'}
+    category_dict = {0:'Готовые блюда', 1:'Консервы', 2:'Крупы, макаронные изделия, чай и приправы', 
+                      3:'Молочная продукция', 4:'Мясное, рыба', 5:'Овощи, фрукты, орехи', 6:'Реклама', 
+                      7:'Соки, напитки', 8:'Хлебобулочные и кондитерские изделия'}     
     predict_index = np.argmax(predict, axis=-1)
     for index in predict_index:
-      print(cat[index])
+      print('Нейросеть Категория:', category_dict[index])
     return predict_index
 
 """#vk_parser"""
@@ -129,9 +135,7 @@ def downlaod_img(img,path):
     out = open(path, "wb")
     out.write(p.content)
     out.close()
-# name = 'img1.jpg'
-# path = '../imgs/'+name
-# downlaod_img('https://sun4-15.userapi.com/rT2PGPaYQETVJClKWc65dX2_Zj87hx-xsKcE9w/26XbpiTEEqU.jpg',path)
+
 
 def tests_preparing(groups):
     for i in range(len(groups)):
@@ -150,8 +154,6 @@ def tests_preparing(groups):
                             downlaod_img(url, path)
                     except:
                         pass
-#groups = ['club_helpfoodspb','sharingfood','sharingfood_irk','foodsharing_minsk','food_sharing_spb']
-#tests_preparing(groups)
 
 """###parser"""
 
@@ -200,20 +202,18 @@ def vk_pars_func(data):
         cities = list(set(data[i]['city']))
 
         vk_answer = vk_respons(domain, token, version)
-        print(vk_answer)
         post_id = vk_answer['response']['items'][0]['id']
         owner_id = vk_answer['response']['items'][0]['owner_id']
         writer = write_json(post_id, owner_id)
         if writer:
-            print('link:', 'https://vk.com/' + domain + '?w=wall' + str(owner_id) + '_' + str(post_id))
+            print('Пост Вк:',
+                  'link:', 'https://vk.com/' + domain + '?w=wall' + str(owner_id) + '_' + str(post_id), '\n')
             item = vk_answer['response']['items'][0]
 
             text = item['text']
-            print(text)
 
 
             # Определение города
-            print(cities)
             if len(cities) == 1:
                 city = [cities[0]]
             else:
@@ -272,9 +272,9 @@ def vk_pars_func(data):
             send = {'link': 'https://vk.com/' + domain + '?w=wall' + str(owner_id) + '_' + str(post_id),
                     'category': category, 'city': city, 'text': text}
             bot_send = json.dumps(send)
-            print(bot_send)
+            print('Сообщение боту:\n',bot_send, '\n')
             requests.get('https://nanib0ots.pythonanywhere.com/bot/post', send, cookies={'parser_key': '12345678'})
-            
+            print('=========================================')
 
 
 def main():
@@ -282,11 +282,11 @@ def main():
         try:
             response = requests.get('https://nanib0ots.pythonanywhere.com/bot/get_data', cookies={'parser_key': '12345678'})
             if response.status_code != 200:
-                print(response)
                 time.sleep(5)
                 main()
             data = json.loads(response.content)
-            print('from db: ', data)
+            print('=========================================')
+            print('Ответ от базы данных\n', data,'\n')
         except requests.exceptions.ConnectionError:
             print('ConnectionError')
             time.sleep(40)
